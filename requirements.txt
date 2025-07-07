@@ -1,0 +1,18 @@
+# Core web app
+dash>=3.0.0
+dash-bootstrap-components>=1.5.0
+python-dotenv>=1.0.0
+
+# LangChain ecosystem
+langchain-community>=0.2.0
+
+# OpenAI + tokenizer
+openai>=1.30.0
+tiktoken>=0.7.0
+
+# Vector store (FAISS)
+faiss-cpu>=1.7.4
+
+# Document loaders & parsing helpers
+unstructured[all-docs]>=0.12.0   # covers .docx, .txt, .md, etc.
+pypdf>=3.17.0                    # used by PyPDFLoader
