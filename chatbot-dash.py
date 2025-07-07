@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[ ]:
-
-
 """
 DocuSearch – Dash version
 Chat with your documents (CSV, PDF, DOCX, TXT, …)
@@ -140,6 +136,7 @@ app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
+    eager_loading=True,  # <-- loads all JS at once, avoids chunk errors
 )
 server = app.server  # for gunicorn / deployment
 server.secret_key = os.getenv("FLASK_SECRET_KEY", str(uuid.uuid4()))
@@ -205,16 +202,15 @@ def make_sidebar():
 
 app.layout = dbc.Container(
     [
-        dcc.Store(id="chat-history", data=[]),      # list of {"role": ..., "content": ...}
-        dcc.Store(id="retriever-store"),            # will hold a dummy key; actual object in SESSION_STATE
-        dcc.Store(id="qa-ready", data=False),       # bool flag
+        dcc.Store(id="chat-history", data=[]),
+        dcc.Store(id="retriever-store"),
+        dcc.Store(id="qa-ready", data=False),
         dbc.Row(
             [
                 dbc.Col(make_sidebar(), width=3),
                 dbc.Col(
                     [
                         html.H2("📄 Chat With Your Documents"),
-                        # Spinner wraps chat window
                         dcc.Loading(
                             id="loading-chat",
                             type="circle",
@@ -247,7 +243,6 @@ app.layout = dbc.Container(
 
 # ---------- 6. Callbacks ----------
 
-# 6.1. Save API key to env (client side can't access env directly)
 @app.callback(
     Output("api-key-input", "value", allow_duplicate=True),
     Input("api-key-input", "value"),
@@ -258,7 +253,6 @@ def update_api_key(key):
         os.environ["OPENAI_API_KEY"] = key.strip()
     return key
 
-# 6.2. Handle file upload -> build retriever
 @app.callback(
     Output("upload-status", "children"),
     Output("retriever-store", "data"),
@@ -289,7 +283,6 @@ def handle_upload(contents, filenames, api_key):
 
     return "✅ Documents indexed. Ask away!", "ready", True
 
-# 6.3. Clear chat
 @app.callback(
     Output("chat-history", "data"),
     Output("chat-window", "children"),
@@ -305,7 +298,6 @@ def clear_chat(_):
         SESSION_STATE[sid]["qa_chain"] = None
     return [], []
 
-# 6.4. Send message
 @app.callback(
     Output("chat-history", "data", allow_duplicate=True),
     Output("chat-window", "children", allow_duplicate=True),
