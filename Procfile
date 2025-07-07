@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run chatbot-dash.py
+web: sh setup.sh && python chatbot-dash.py
